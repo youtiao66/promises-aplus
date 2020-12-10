@@ -6,18 +6,27 @@ function resolvePromise(promise2, x, resolve, reject) {
   if (x === promise2) {
     reject(new TypeError('chaining cycle'))
   } else if (typeof x === "object" && x || typeof x === 'function') {
+    let called
     try {
       let then = x.then
       if (typeof then === 'function') {
         then.call(x, y => {
+          if (called) return
+          called = true
           resolvePromise(promise2, y, resolve, reject)
         }, r => {
+          if (called) return
+          called = true
           reject(r)
         })
       } else {
+        if (called) return
+        called = true
         resolve(x)
       }
     } catch (err) {
+      if (called) return
+      called = true
       reject(err)
     }
   } else {
