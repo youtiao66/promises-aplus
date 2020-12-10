@@ -80,6 +80,8 @@ PromiseZ.prototype.then = function(onFulfilled, onRejected) {
       })
     }
   })
+
+  return promise2
 }
 
 PromiseZ.deferred = function() {
