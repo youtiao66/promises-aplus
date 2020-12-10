@@ -2,6 +2,29 @@ const PENDING = 'pending'
 const FULFILLED = 'fulfilled'
 const REJECTED = 'rejected'
 
+function resolvePromise(promise2, x, resolve, reject) {
+  if (x === promise2) {
+    reject(new TypeError('chaining cycle'))
+  } else if (typeof x === "object" && x || typeof x === 'function') {
+    try {
+      let then = x.then
+      if (typeof then === 'function') {
+        then.call(x, y => {
+          resolvePromise(promise2, y, resolve, reject)
+        }, r => {
+          reject(r)
+        })
+      } else {
+        resolve(x)
+      }
+    } catch (err) {
+      reject(err)
+    }
+  } else {
+    resolve(x)
+  }
+}
+
 function PromiseZ(fn) {
   this.status = PENDING
   this.value = undefined
@@ -47,7 +70,7 @@ PromiseZ.prototype.then = function(onFulfilled, onRejected) {
       setTimeout(() => {
         try {
           let x = onFulfilledCallback(this.value)
-          resolve(x)
+          resolvePromise(promise2, x, resolve, reject)
         } catch(err) {
           reject(err)
         }
@@ -56,7 +79,7 @@ PromiseZ.prototype.then = function(onFulfilled, onRejected) {
       setTimeout(() => {
         try {
           let x = onRejectedCallback(this.reason)
-          resolve(x)
+          resolvePromise(promise2, x, resolve, reject)
         } catch(err) {
           reject(err)
         }
@@ -65,7 +88,7 @@ PromiseZ.prototype.then = function(onFulfilled, onRejected) {
       this.onFulfilledCallbacks.push((value) => {
         try {
           let x = onFulfilledCallback(value)
-          resolve(x)
+          resolvePromise(promise2, x, resolve, reject)
         } catch(err) {
           reject(err)
         }
@@ -73,7 +96,7 @@ PromiseZ.prototype.then = function(onFulfilled, onRejected) {
       this.onRejectedCallbacks.push((reason) => {
         try {
           let x = onRejectedCallback(reason)
-          resolve(x)
+          resolvePromise(promise2, x, resolve, reject)
         } catch(err) {
           reject(err)
         }
