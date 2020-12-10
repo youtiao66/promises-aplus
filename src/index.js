@@ -42,18 +42,44 @@ function PromiseZ(fn) {
 PromiseZ.prototype.then = function(onFulfilled, onRejected) {
   const onFulfilledCallback = typeof onFulfilled === 'function' ? onFulfilled : value => value
   const onRejectedCallback = typeof onRejected === 'function' ? onRejected : reason => { throw reason }
-  if (this.status === FULFILLED) {
-    setTimeout(() => {
-      onFulfilledCallback(this.value)
-    }, 0)
-  } else if (this.status === REJECTED) {
-    setTimeout(() => {
-      onRejectedCallback(this.reason)
-    }, 0)
-  } else {
-    this.onFulfilledCallbacks.push(onFulfilledCallback)
-    this.onRejectedCallbacks.push(onRejectedCallback)
-  }
+  let promise2 = new PromiseZ((resolve, reject) => {
+    if (this.status === FULFILLED) {
+      setTimeout(() => {
+        try {
+          let x = onFulfilledCallback(this.value)
+          resolve(x)
+        } catch(err) {
+          reject(err)
+        }
+      }, 0)
+    } else if (this.status === REJECTED) {
+      setTimeout(() => {
+        try {
+          let x = onRejectedCallback(this.reason)
+          resolve(x)
+        } catch(err) {
+          reject(err)
+        }
+      }, 0)
+    } else {
+      this.onFulfilledCallbacks.push((value) => {
+        try {
+          let x = onFulfilledCallback(value)
+          resolve(x)
+        } catch(err) {
+          reject(err)
+        }
+      })
+      this.onRejectedCallbacks.push((reason) => {
+        try {
+          let x = onRejectedCallback(reason)
+          resolve(x)
+        } catch(err) {
+          reject(err)
+        }
+      })
+    }
+  })
 }
 
 PromiseZ.deferred = function() {
