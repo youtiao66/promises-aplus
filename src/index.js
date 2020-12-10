@@ -7,8 +7,8 @@ function PromiseZ(fn) {
   this.value = undefined
   this.reason = undefined
 
-  this.onFulfilledCallback
-  this.onRejectedCallback
+  this.onFulfilledCallbacks = []
+  this.onRejectedCallbacks = []
 
   const me = this
 
@@ -16,7 +16,9 @@ function PromiseZ(fn) {
     if (me.status === PENDING) {
       me.status = FULFILLED
       me.value = value
-      me.onFulfilledCallback && me.onFulfilledCallback(value)
+      setTimeout(() => {
+        me.onFulfilledCallbacks.forEach(cb => cb(value))
+      }, 0)
     }
   }
 
@@ -24,7 +26,9 @@ function PromiseZ(fn) {
     if (me.status === PENDING) {
       me.status = REJECTED
       me.reason = reason
-      me.onRejectedCallback && me.onRejectedCallback(reason)
+      setTimeout(() => {
+        me.onRejectedCallbacks.forEach(cb => cb(reason))
+      }, 0)
     }
   }
 
@@ -39,12 +43,16 @@ PromiseZ.prototype.then = function(onFulfilled, onRejected) {
   const onFulfilledCallback = typeof onFulfilled === 'function' ? onFulfilled : value => value
   const onRejectedCallback = typeof onRejected === 'function' ? onRejected : reason => { throw reason }
   if (this.status === FULFILLED) {
-    onFulfilledCallback(this.value)
+    setTimeout(() => {
+      onFulfilledCallback(this.value)
+    }, 0)
   } else if (this.status === REJECTED) {
-    onRejectedCallback(this.reason)
+    setTimeout(() => {
+      onRejectedCallback(this.reason)
+    }, 0)
   } else {
-    this.onFulfilledCallback = onFulfilledCallback
-    this.onRejectedCallback = onRejectedCallback
+    this.onFulfilledCallbacks.push(onFulfilledCallback)
+    this.onRejectedCallbacks.push(onRejectedCallback)
   }
 }
 
