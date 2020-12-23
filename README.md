@@ -11,3 +11,30 @@
 ## 示意图
 
 ![promises](https://media.prod.mdn.mozit.cloud/attachments/2014/09/18/8633/51a934a714e191f53e588bff719bc321/promises.png "promises")
+
+## 注意事项
+
+### `return resolve()`
+
+> `resolve` 和 `reject` 函数并不会立即终止同步代码的执行，最佳实践是立即 `return` 或者置于末尾
+
+``` js
+// not recommended
+new Promise((resolve, reject) => {
+    console.log(1)
+    resolve()
+    console.log(2)
+}).then(() => {
+    console.log(3)
+})
+// 1 -> 2 -> 3
+
+// recommended
+new Promise((resolve, reject) => {
+    console.log(1)
+    return resolve()
+}).then(() => {
+    console.log(3)
+})
+// 1 -> 3
+```
